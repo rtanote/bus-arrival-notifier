@@ -1,0 +1,71 @@
+# Bus Arrival Notifier Configuration
+# Copy this file to config.yaml and edit with your values
+
+# LaMetric Time device settings
+lametric:
+  ip: "192.168.x.x"
+  api_key: "your-lametric-api-key"
+  bus_app:
+    package: "com.lametric.your-app-id"
+    widget: "your-widget-id"
+  clock_app:
+    package: "com.lametric.clock"
+    widget: "your-clock-widget-id"
+
+# ODPT API settings (for GTFS data updates)
+odpt:
+  api_key: "your-odpt-api-key"
+  gtfs_url: "https://api.odpt.org/api/v4/files/odpt/OdakyuBus/AIILines.zip"
+
+# Bus stops configuration
+bus_stops:
+  # Each stop has a name and list of GTFS stop IDs
+  stop_a:
+    name: "Bus Stop A"
+    stop_ids:
+      - "12345_1"
+      - "12345_2"
+  stop_b:
+    name: "Bus Stop B"
+    stop_ids:
+      - "67890_1"
+      - "67890_2"
+
+# Destinations (headsign patterns to match)
+destinations:
+  destination_1:
+    - "Station A"
+  destination_2:
+    - "Station B"
+    - "Station B Central"
+  destination_3:
+    - "Terminal C"
+
+# Routes for speech/display
+# Each route: stop_key, destination_key, speech_name, display_name
+routes:
+  - stop: "stop_a"
+    destination: "destination_1"
+    speech_name: "Stop A to Station A"
+    display_name: "A→Station A"
+  - stop: "stop_a"
+    destination: "destination_2"
+    speech_name: "Stop A to Station B"
+    display_name: "A→Station B"
+  - stop: "stop_b"
+    destination: "destination_1"
+    speech_name: "Stop B to Station A"
+    display_name: "B→Station A"
+
+# Server settings
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+
+# Logging settings
+logging:
+  level: "INFO"
+  file: "/var/log/bus-arrival-notifier/app.log"
+  max_size_mb: 10
+  backup_count: 5

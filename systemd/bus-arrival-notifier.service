@@ -1,0 +1,33 @@
+[Unit]
+Description=Bus Arrival Notifier Service
+Documentation=https://github.com/your-username/bus-arrival-notifier
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/bus-arrival-notifier
+ExecStart=/home/pi/bus-arrival-notifier/venv/bin/python app.py
+
+Restart=always
+RestartSec=10
+
+# Environment
+Environment="PATH=/home/pi/bus-arrival-notifier/venv/bin:/usr/bin:/bin"
+
+# Logging to systemd journal
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bus-arrival-notifier
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=false
+
+# Resource limits
+MemoryMax=256M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+[Unit]
+Description=Bus GTFS Data Update
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/bus-arrival-notifier
+ExecStart=/home/pi/bus-arrival-notifier/venv/bin/python update_gtfs.py
+
+# Environment
+Environment="PATH=/home/pi/bus-arrival-notifier/venv/bin:/usr/bin:/bin"
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bus-gtfs-update
