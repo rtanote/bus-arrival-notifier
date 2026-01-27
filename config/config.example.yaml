@@ -43,19 +43,23 @@ destinations:
 
 # Routes for speech/display
 # Each route: stop_key, destination_key, speech_name, display_name
+# lametric_key: optional key name for LaMetric API output (defaults to stop_destination)
 routes:
   - stop: "stop_a"
     destination: "destination_1"
     speech_name: "Stop A to Station A"
     display_name: "A→Station A"
+    lametric_key: "a_station1"
   - stop: "stop_a"
     destination: "destination_2"
     speech_name: "Stop A to Station B"
     display_name: "A→Station B"
+    lametric_key: "a_station2"
   - stop: "stop_b"
     destination: "destination_1"
     speech_name: "Stop B to Station A"
     display_name: "B→Station A"
+    lametric_key: "b_station1"
 
 # Server settings
 server:

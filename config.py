@@ -41,6 +41,7 @@ class RouteConfig:
     destination: str
     speech_name: str
     display_name: str
+    lametric_key: Optional[str] = None  # LaMetric用のキー名（省略時はstop_destinationを使用）
 
 
 @dataclass
@@ -112,6 +113,7 @@ class Config:
                 destination=route_data.get("destination", ""),
                 speech_name=route_data.get("speech_name", ""),
                 display_name=route_data.get("display_name", ""),
+                lametric_key=route_data.get("lametric_key"),
             ))
 
         # Server

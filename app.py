@@ -122,11 +122,13 @@ def get_lametric():
     result = {}
 
     for route in config.routes:
-        key = f"{route.stop}_{route.destination}"
-        if key in data and data[key]:
-            result[key] = " ".join(map(str, data[key]))
+        data_key = f"{route.stop}_{route.destination}"
+        # lametric_keyが指定されていればそれを使用、なければdata_keyと同じ
+        output_key = route.lametric_key if route.lametric_key else data_key
+        if data_key in data and data[data_key]:
+            result[output_key] = " ".join(map(str, data[data_key]))
         else:
-            result[key] = "--"
+            result[output_key] = "--"
 
     return jsonify(result)
 
