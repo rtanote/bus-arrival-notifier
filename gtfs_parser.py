@@ -20,6 +20,13 @@ _cache = {
     "loaded": False,
 }
 
+# フォールバック状態を追跡
+_fallback_info = {
+    "is_fallback": False,
+    "original_date": None,
+    "fallback_date": None,
+}
+
 
 def _get_all_stop_ids() -> set:
     """設定から全バス停IDを取得"""
@@ -28,6 +35,84 @@ def _get_all_stop_ids() -> set:
     for stop_config in config.bus_stops.values():
         all_stop_ids.update(stop_config.stop_ids)
     return all_stop_ids
+
+
+def _find_fallback_date(target_date: str, calendar_dates: dict) -> Optional[str]:
+    """
+    指定日付がcalendar_datesにない場合、同じ曜日の最新日付を探す
+
+    Args:
+        target_date: YYYYMMDD形式の日付
+        calendar_dates: {date: [service_ids]} の辞書
+
+    Returns:
+        フォールバック用の日付（YYYYMMDD形式）、見つからなければNone
+    """
+    global _fallback_info
+
+    if target_date in calendar_dates:
+        _fallback_info["is_fallback"] = False
+        _fallback_info["original_date"] = target_date
+        _fallback_info["fallback_date"] = None
+        return target_date
+
+    # 対象日の曜日を取得
+    try:
+        target_dt = datetime.strptime(target_date, "%Y%m%d")
+        target_weekday = target_dt.weekday()
+    except ValueError:
+        return None
+
+    # calendar_datesにある日付から同じ曜日のものを探す
+    same_weekday_dates = []
+    for date_str in calendar_dates.keys():
+        try:
+            dt = datetime.strptime(date_str, "%Y%m%d")
+            if dt.weekday() == target_weekday:
+                same_weekday_dates.append(date_str)
+        except ValueError:
+            continue
+
+    if not same_weekday_dates:
+        return None
+
+    # 最新の日付を返す
+    same_weekday_dates.sort(reverse=True)
+    fallback_date = same_weekday_dates[0]
+    print(f"[GTFS] Date {target_date} not in calendar, using fallback: {fallback_date} (same weekday)")
+
+    # フォールバック情報を更新
+    _fallback_info["is_fallback"] = True
+    _fallback_info["original_date"] = target_date
+    _fallback_info["fallback_date"] = fallback_date
+
+    return fallback_date
+
+
+def get_fallback_info() -> Dict:
+    """
+    フォールバック状態を取得
+
+    Returns:
+        {
+            "is_fallback": bool,
+            "original_date": str or None,  # YYYYMMDD
+            "fallback_date": str or None,  # YYYYMMDD
+            "fallback_date_formatted": str or None,  # "1月27日" 形式
+        }
+    """
+    info = _fallback_info.copy()
+
+    if info["is_fallback"] and info["fallback_date"]:
+        try:
+            dt = datetime.strptime(info["fallback_date"], "%Y%m%d")
+            info["fallback_date_formatted"] = f"{dt.month}月{dt.day}日"
+        except ValueError:
+            info["fallback_date_formatted"] = None
+    else:
+        info["fallback_date_formatted"] = None
+
+    return info
 
 
 def _load_all_data():
@@ -141,8 +226,11 @@ def get_next_buses(
     trip_services = _cache["trip_services"]
     stop_times = _cache["stop_times"]
 
-    # 今日運行するservice_id
-    today_services = set(calendar_dates.get(today, []))
+    # 今日運行するservice_id（フォールバック対応）
+    effective_date = _find_fallback_date(today, calendar_dates)
+    if effective_date is None:
+        return []
+    today_services = set(calendar_dates.get(effective_date, []))
 
     # 該当するバスを抽出
     candidates = []
@@ -216,7 +304,11 @@ def get_next_buses_with_times(
     trip_services = _cache["trip_services"]
     stop_times = _cache["stop_times"]
 
-    today_services = set(calendar_dates.get(today, []))
+    # フォールバック対応
+    effective_date = _find_fallback_date(today, calendar_dates)
+    if effective_date is None:
+        return []
+    today_services = set(calendar_dates.get(effective_date, []))
     candidates = []
     target_stop_ids = set(stop_config.stop_ids)
 

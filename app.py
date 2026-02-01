@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 import threading
 from config import get_config
-from gtfs_parser import get_bus_data as get_gtfs_bus_data, get_next_buses_with_times
+from gtfs_parser import get_bus_data as get_gtfs_bus_data, get_next_buses_with_times, get_fallback_info
 
 app = Flask(__name__)
 
@@ -107,6 +107,11 @@ def get_bus_speech():
         speech = "現在バスの情報がありません"
     else:
         speech = "。".join(speech_parts) + "です"
+
+        # フォールバック使用時は注釈を追加
+        fallback_info = get_fallback_info()
+        if fallback_info["is_fallback"] and fallback_info["fallback_date_formatted"]:
+            speech += f"。なお、この時刻表は{fallback_info['fallback_date_formatted']}現在の情報を元にしています"
 
     return jsonify({
         "speech": speech,
